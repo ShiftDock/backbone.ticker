@@ -37,7 +37,7 @@
           validate: true
         });
       }
-      return this.newPoll();
+      return this.tick();
     };
 
     Ticker.prototype.stop = function() {
@@ -55,32 +55,32 @@
     };
 
     Ticker.prototype.resume = function() {
-      return this.newPoll();
+      return this.tick();
     };
 
     Ticker.prototype.nudge = function() {
       if (this.isRunning() && this.pause()) {
-        return this.payloadWithNextPoll();
+        return this.payloadWithNextTick();
       }
     };
 
-    Ticker.prototype.newPoll = function(options) {
+    Ticker.prototype.tick = function(options) {
       if (options == null) {
         options = {};
       }
-      return this.set('id', this.schedulePoll(), options);
+      return this.set('id', this.scheduleTick(), options);
     };
 
-    Ticker.prototype.schedulePoll = function() {
+    Ticker.prototype.scheduleTick = function() {
       var _this = this;
       return setTimeout((function() {
-        return _this.payloadWithNextPoll();
+        return _this.payloadWithNextTick();
       }), this.get('interval'));
     };
 
-    Ticker.prototype.payloadWithNextPoll = function() {
+    Ticker.prototype.payloadWithNextTick = function() {
       this.get('payload')();
-      return this.newPoll({
+      return this.tick({
         silent: true
       });
     };

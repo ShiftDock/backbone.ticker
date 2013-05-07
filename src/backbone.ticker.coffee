@@ -21,7 +21,7 @@ class Backbone.Ticker extends Backbone.Model
 	# Start the ticker with the existing payload, or overriding with the specified payload
 	start: (payload = null) -> 
 		@set 'payload', payload, {validate: true} unless not payload
-		@newPoll()
+		@tick()
 	
 	# Stop the current ticker and wipe the payload, effectively a reset
 	stop: -> @set 'payload', (->) if @pause()
@@ -30,21 +30,21 @@ class Backbone.Ticker extends Backbone.Model
 	pause: -> if @isRunning() then !!@set('id', null) else false
 	
 	# Resume the current ticker using the existing payload
-	resume: -> @newPoll()
+	resume: -> @tick()
 	
 	# Jumps the remaining interval to execute the payload immediately, then resumes
-	nudge: -> @payloadWithNextPoll() if @isRunning() and @pause()
+	nudge: -> @payloadWithNextTick() if @isRunning() and @pause()
 	
-	# Silently sets the next poll process id to the id variable
-	newPoll: (options = {}) -> @set 'id', @schedulePoll(), options
+	# Silently sets the next tick process id to the id variable
+	tick: (options = {}) -> @set 'id', @scheduleTick(), options
 	
-	# Schedules the next poll, returning the process id
-	schedulePoll: -> setTimeout (=> @payloadWithNextPoll()), @get('interval')
+	# Schedules the next tick, returning the process id
+	scheduleTick: -> setTimeout (=> @payloadWithNextTick()), @get('interval')
 	
-	# Combines the payload with a call to schedule the next poll
-	payloadWithNextPoll: ->
+	# Combines the payload with a call to schedule the next tick
+	payloadWithNextTick: ->
 		@get('payload')()
-		@newPoll({silent: true})
+		@tick({silent: true})
 		
 	# Make sure only one process is scheduled at a time by clearing old processes
 	# when the id changes. 
