@@ -12,13 +12,10 @@ We couldn't find something out there that did exactly what we wanted so we creat
 
 ## Usage
 
-Include `backbone.ticker.js` anywhere after you link backbone.js, then it's as simple as creating a new ticker with the
-options you want:
+Include `backbone.ticker.js` anywhere after you link `backbone.js`. Creating a simple ticker that calls an empty function
+every second is as easy as initializing a new ticker and starting it:
 
-    ticker = new Backbone.Ticker({ticker: function() { console.debug("Hello world!") }})
-    
-and then starting it:
-
+    ticker = new Backbone.Ticker()
     ticker.start()
 
 Possible options are simply `interval` and `payload`, and these can even be changed while the ticker is running and they'll take effect on the next trigger.
@@ -37,6 +34,22 @@ For example:
 
     // change the payload and interval at once
     ticker.set({payload: function() {console.log("Hello!")}, interval: 4000})
+    
+    // Initialize a new ticker with these options
+    ticker = new Backbone.Ticker({payload: function() {console.log("Hello!")}, interval: 4000})
+    
+## Actions
+
+__ticker.start():__ Start the ticker using the existing options. Takes an optional function argument that overrides any previously
+specified payload.
+
+__ticker.stop():__ Stop the ticker and wipe the payload. Effectively a reset.
+
+__ticker.pause():__ Pauses the ticker, retaining options.
+
+__ticker.resume():__ Resume the ticker using the existing configuration.
+
+__ticker.nudge():__ Interrupts the ticker to execute the payload immediately then resumes.
     
 
 
