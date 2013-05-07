@@ -40,16 +40,26 @@ For example:
     
 ## Actions
 
-__ticker.start():__ Start the ticker using the existing options. Takes an optional function argument that overrides any previously
-specified payload.
+Start the ticker using the existing options. Takes an optional function argument that overrides any previously
+specified payload:
 
-__ticker.stop():__ Stop the ticker and wipe the payload. Effectively a reset.
+    ticker.start()
 
-__ticker.pause():__ Pauses the ticker, retaining options.
+Stop the ticker and wipe the payload. Effectively a reset:
 
-__ticker.resume():__ Resume the ticker using the existing configuration.
+    ticker.stop()
 
-__ticker.nudge():__ Interrupts the ticker to execute the payload immediately then resumes.
+Pause the ticker, retaining options:
+
+    ticker.pause()
+
+Resume the ticker using the existing configuration:
+
+    ticker.resume()
+
+Interrupt the ticker to execute the payload immediately then resume:
+
+    ticker.nudge()
     
 
 
