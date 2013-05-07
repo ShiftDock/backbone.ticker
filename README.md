@@ -13,14 +13,18 @@ options you want:
 Possible options are simply `interval` and `payload`, and these can even be changed while the ticker is running and they'll take effect on the next trigger.
 
 __interval:__ Specified in milliseconds (ms), the time between each tick. Default is 1000ms (1 second).
+
 __payload:__ A function to be run on each tick. Default is an empty function.
 
 For example:
 
-    ticker.set("interval", 10000)    // sets the interval to 10,000ms (10 seconds)
+    // sets the interval to 10,000ms (10 seconds)
+    ticker.set("interval", 10000)
 
+    // set a new anonymous function as the payload
     ticker.set("payload", function() { alert("Tick!")})
 
+    // change the payload and interval at once
     ticker.set({payload: function() {console.log("Hello!")}, interval: 4000})
 
 
