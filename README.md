@@ -3,12 +3,13 @@ backbone.ticker
 
 A simple, small ticker for backbone that runs a payload at a given interval.
 
-At ShiftDock we needed a discrete ticker that was flexible enough to run our long-polling function whilst allowing
-us to force an action outside of the timed poller without causing a stall or spinning off more than one process. Calling
-setTimeout recursively can create a few tricky bugs so it made sense use Backbone's powerful MVC structure and dirty 
-attributes to tame this behaviour.
+Calling setTimeout recursively can create a few tricky problems; including silent stalls and accumulating multiple 
+processes that can quickly get out of control. Backbone.Ticker uses Backbone's powerful MVC structure and dirty 
+attributes to tame this behaviour by recording setTimeout process numbers and killing unused processes.
 
-We couldn't find something out there that did exactly what we wanted so we created backbone.ticker instead.
+At ShiftDock we needed a ticker that was flexible enough to run both quick native processes and asynchronous updates
+to our server without falling over.We couldn't find something out there that did exactly what we wanted so we created 
+Backbone.Ticker instead.
 
 ## Usage
 
@@ -22,7 +23,7 @@ Possible options are simply `interval` and `payload`, and these can even be chan
 
 __interval:__ Specified in milliseconds (ms), the time between each tick. Default is 1000ms (1 second).
 
-__payload:__ A function to be run on each tick. Default is an empty function.
+__payload:__ A function to be run on each tick. Default is an empty function that simply schedules the next tick.
 
 For example:
 
@@ -30,13 +31,25 @@ For example:
     ticker.set("interval", 10000)
 
     // set a new anonymous function as the payload
-    ticker.set("payload", function() { alert("Tick!")})
+    ticker.set("payload", function(complete) { alert("Tick!"), complete()})
 
     // change the payload and interval at once
-    ticker.set({payload: function() {console.log("Hello!")}, interval: 4000})
+    ticker.set({
+        payload: function(complete) {
+            console.log("Hello!"); 
+            complete();
+        }, 
+        interval: 4000
+    })
     
     // Initialize a new ticker with these options
-    ticker = new Backbone.Ticker({payload: function() {console.log("Hello!")}, interval: 4000})
+    ticker = new Backbone.Ticker({
+        payload: function(complete) {
+            console.log("Hello!"); 
+            complete();
+        }, 
+        interval: 4000
+    })
     
 ## Actions
 
@@ -60,6 +73,21 @@ Resume the ticker using the existing configuration:
 Interrupt the ticker to execute the payload immediately then resume:
 
     ticker.nudge()
+    
+## Customising the Payload
+
+You can have the ticker do practically anything you want but it is really important to remember that it needs to know when
+your process has completed and to schedule the next tick. If you're not using the ticker for long-polling this may seem 
+like overkill but it makes sense.
+
+Say you want to run a process 5 seconds apart. Your process may take 500ms to complete, so it makes sense to wait until
+it's done to schedule it again, otherwise the next will happen 4.5s after the last rather than 5s.
+
+This becomes a problem when performing asynchronous POST or PUT requests to your server. If the request takes longer than
+your interval then there's a risk it would be run multiple times.
+
+Instead, Backbone.Ticker sends a callback as the first argument of your payload that you should use to indicate that your
+process has completed execution.
     
 
 
