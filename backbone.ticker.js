@@ -11,10 +11,15 @@
       return Ticker.__super__.constructor.apply(this, arguments);
     }
 
-    Ticker.prototype.defaults = {
-      interval: 1000,
-      id: null,
-      payload: function() {}
+    Ticker.prototype.defaults = function() {
+      var _this = this;
+      return {
+        interval: 1000,
+        id: null,
+        payload: function(complete) {
+          return _this.defaultPayload(complete);
+        }
+      };
     };
 
     Ticker.prototype.initialize = function() {
@@ -29,10 +34,8 @@
     };
 
     Ticker.prototype.start = function(payload) {
-      if (payload == null) {
-        payload = null;
-      }
-      if (!!payload) {
+      console.log("Starting...");
+      if (payload) {
         this.set('payload', payload, {
           validate: true
         });
@@ -68,6 +71,7 @@
       if (options == null) {
         options = {};
       }
+      console.log("Calling tick");
       return this.set('id', this.scheduleTick(), options);
     };
 
@@ -79,10 +83,17 @@
     };
 
     Ticker.prototype.payloadWithNextTick = function() {
-      this.get('payload')();
-      return this.tick({
-        silent: true
+      var _this = this;
+      console.log("Calling payload and adding tick");
+      return this.get('payload')(function() {
+        return _this.tick({
+          silent: true
+        });
       });
+    };
+
+    Ticker.prototype.defaultPayload = function(complete) {
+      return complete();
     };
 
     Ticker.prototype.clearOldProcess = function() {
@@ -91,6 +102,10 @@
 
     Ticker.prototype.isRunning = function() {
       return !!this.get('id');
+    };
+
+    Ticker.prototype.payloadContainsCallback = function() {
+      return /(this.tick\(\)|@tick\(\))/.test(this.get('payload'));
     };
 
     return Ticker;

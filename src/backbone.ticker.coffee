@@ -7,10 +7,10 @@
 # Used at ShiftDock. © 2013 John M Hope, released under MIT License. 
 
 class Backbone.Ticker extends Backbone.Model
-	defaults:
+	defaults: ->
 		interval: 1000
 		id: null
-		payload: ->
+		payload: (complete) => @defaultPayload(complete)
 		
 	initialize: ->
 		@on 'change:id', @clearOldProcess, this
@@ -19,7 +19,7 @@ class Backbone.Ticker extends Backbone.Model
 	validate: (attrs, options) -> return "Payload must be a function" if typeof attrs.payload isnt 'function'
 	
 	# Start the ticker with the existing payload, or overriding with the specified payload
-	start: (payload = null) -> 
+	start: (payload) -> 
 		@set 'payload', payload, {validate: true} unless not payload
 		@tick()
 	
@@ -42,9 +42,11 @@ class Backbone.Ticker extends Backbone.Model
 	scheduleTick: -> setTimeout (=> @payloadWithNextTick()), @get('interval')
 	
 	# Combines the payload with a call to schedule the next tick
-	payloadWithNextTick: ->
-		@get('payload')()
-		@tick({silent: true})
+	payloadWithNextTick: -> 
+		console.log "Calling payload and adding tick"
+		@get('payload')(=> @tick({silent: true}))
+	
+	defaultPayload: (complete) -> complete()
 		
 	# Make sure only one process is scheduled at a time by clearing old processes
 	# when the id changes. 
