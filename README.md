@@ -98,13 +98,13 @@ Instead, Backbone.Ticker sends a callback as the first argument of your payload 
 process has completed execution. It's important to do this at every point that your process may exit, unless you want 
 the ticker to stall at certain points.
 
-For example:
+#### Payload Example - JS
 
 ```js
 
-ticker = new Backbone.Ticker({interval: 4000});
+var ticker = new Backbone.Ticker({interval: 4000});
 
-saveIfChanged = function(complete) {
+var saveIfChanged = function(complete) {
   if (appointment.hasChanged()) {
     appointment.save({
       success: function() {
@@ -112,6 +112,7 @@ saveIfChanged = function(complete) {
         complete()
       },
       error: function() {
+        // No complete(); Stops ticking if save fails
         console.log("Save failed!");
       }
     });
@@ -120,6 +121,29 @@ saveIfChanged = function(complete) {
     complete();
   }
 }
+
+ticker.set('payload', saveIfChanged)
+
+```
+
+#### Payload Example - CoffeeScript
+
+```js
+
+ticker = new Backbone.Ticker({interval: 4000});
+
+saveIfChanged = (complete) ->
+    if appointment.hasChanged()
+        appointment.save
+            success: (complete) ->
+                console.log "Saved successfully!"
+                complete()
+            error: (complete) ->
+                # No complete(); Stops ticking if save fails
+                console.log "Save failed!"
+    else
+        console.log "Nothing to see here!"
+        complete()
 
 ticker.set('payload', saveIfChanged)
 
