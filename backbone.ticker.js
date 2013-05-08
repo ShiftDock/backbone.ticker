@@ -34,8 +34,7 @@
     };
 
     Ticker.prototype.start = function(payload) {
-      console.log("Starting...");
-      if (payload) {
+      if (!!payload) {
         this.set('payload', payload, {
           validate: true
         });
@@ -71,7 +70,6 @@
       if (options == null) {
         options = {};
       }
-      console.log("Calling tick");
       return this.set('id', this.scheduleTick(), options);
     };
 
@@ -84,7 +82,6 @@
 
     Ticker.prototype.payloadWithNextTick = function() {
       var _this = this;
-      console.log("Calling payload and adding tick");
       return this.get('payload')(function() {
         return _this.tick({
           silent: true
@@ -102,10 +99,6 @@
 
     Ticker.prototype.isRunning = function() {
       return !!this.get('id');
-    };
-
-    Ticker.prototype.payloadContainsCallback = function() {
-      return /(this.tick\(\)|@tick\(\))/.test(this.get('payload'));
     };
 
     return Ticker;

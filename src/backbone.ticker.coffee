@@ -42,9 +42,7 @@ class Backbone.Ticker extends Backbone.Model
 	scheduleTick: -> setTimeout (=> @payloadWithNextTick()), @get('interval')
 	
 	# Combines the payload with a call to schedule the next tick
-	payloadWithNextTick: -> 
-		console.log "Calling payload and adding tick"
-		@get('payload')(=> @tick({silent: true}))
+	payloadWithNextTick: -> @get('payload')(=> @tick({silent: true}))
 	
 	defaultPayload: (complete) -> complete()
 		
