@@ -33,7 +33,7 @@ For example:
     ticker.set("interval", 10000)
 
     // set a new anonymous function as the payload
-    ticker.set("payload", function(complete) { alert("Tick!"), complete()})
+    ticker.set("payload", function(complete) { alert("Tick!"); complete()})
 
     // change the payload and interval at once
     ticker.set({
