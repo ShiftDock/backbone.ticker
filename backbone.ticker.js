@@ -60,9 +60,16 @@
       return this.tick();
     };
 
-    Ticker.prototype.nudge = function() {
-      if (this.isRunning() && this.pause()) {
-        return this.payloadWithNextTick();
+    Ticker.prototype.nudge = function(payload) {
+      if (payload == null) {
+        payload = this.executePayload;
+      }
+      if (this.isRunning()) {
+        if (this.pause()) {
+          return this.executeWithCompletionCallback(payload);
+        }
+      } else {
+        return payload();
       }
     };
 
@@ -76,13 +83,18 @@
     Ticker.prototype.scheduleTick = function() {
       var _this = this;
       return setTimeout((function() {
-        return _this.payloadWithNextTick();
+        return _this.executePayload();
       }), this.get('interval'));
     };
 
-    Ticker.prototype.payloadWithNextTick = function() {
+    Ticker.prototype.executePayload = function() {
+      this.set('id', null);
+      return this.executeWithCompletionCallback(this.get('payload'));
+    };
+
+    Ticker.prototype.executeWithCompletionCallback = function(_function) {
       var _this = this;
-      return this.get('payload')(function() {
+      return _function(function() {
         return _this.tick({
           silent: true
         });
@@ -94,7 +106,9 @@
     };
 
     Ticker.prototype.clearOldProcess = function() {
-      return !clearTimeout(this.previous('id'));
+      if (!!this.previous('id')) {
+        return !clearTimeout(this.previous('id'));
+      }
     };
 
     Ticker.prototype.isRunning = function() {

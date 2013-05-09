@@ -32,23 +32,33 @@ class Backbone.Ticker extends Backbone.Model
 	# Resume the current ticker using the existing payload
 	resume: -> @tick()
 	
-	# Jumps the remaining interval to execute the payload immediately, then resumes
-	nudge: -> @payloadWithNextTick() if @isRunning() and @pause()
+	# Jumps the remaining interval to execute the payload immediately, then resumes if the ticker was running
+	nudge: (payload) -> 
+		payload ?= @executePayload
+		if @isRunning()
+			@executeWithCompletionCallback(payload) if @pause()
+		else
+			payload()
 	
 	# Silently sets the next tick process id to the id variable
 	tick: (options = {}) -> @set 'id', @scheduleTick(), options
 	
 	# Schedules the next tick, returning the process id
-	scheduleTick: -> setTimeout (=> @payloadWithNextTick()), @get('interval')
+	scheduleTick: -> setTimeout (=> @executePayload()), @get('interval')
 	
 	# Combines the payload with a call to schedule the next tick
-	payloadWithNextTick: -> @get('payload')(=> @tick({silent: true}))
+	executePayload: -> 
+		@set('id', null) # wipes the id momentarily. Permanently if the ticker stalls.
+		@executeWithCompletionCallback(@get('payload'))
+		
+	# Executes any function, passing a callback to cue up the next call
+	executeWithCompletionCallback: (_function) -> _function(=> @tick({silent: true}))
 	
 	defaultPayload: (complete) -> complete()
 		
 	# Make sure only one process is scheduled at a time by clearing old processes
 	# when the id changes. 
-	clearOldProcess: -> !clearTimeout(@previous('id'))
+	clearOldProcess: -> !clearTimeout(@previous('id')) unless not @previous('id')
 	
 	isRunning: -> !!@get('id')
 	
