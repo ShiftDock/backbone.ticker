@@ -111,7 +111,6 @@
     };
 
     Ticker.prototype.workNext = function() {
-      console.log("Will work next? " + (this.queued()));
       if (!!this.queued()) {
         return this.work(this.nextQueued());
       }
