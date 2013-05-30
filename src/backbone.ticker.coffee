@@ -8,8 +8,10 @@
 
 class Backbone.Ticker extends Backbone.Model
 	defaults: ->
+		blocked: false
 		interval: 1000
 		id: null
+		queue: []
 		payload: (complete) => @defaultPayload(complete)
 		
 	initialize: ->
@@ -35,7 +37,9 @@ class Backbone.Ticker extends Backbone.Model
 	# Jumps the remaining interval to execute the payload immediately, then resumes if the ticker was running
 	nudge: (payload) -> 
 		payload ?= @executePayload
-		if @isRunning()
+		if @isBlocked()
+			@enqueue(payload)
+		else if @isRunning()
 			@executeWithCompletionCallback(payload) if @pause()
 		else
 			payload()
@@ -49,10 +53,21 @@ class Backbone.Ticker extends Backbone.Model
 	# Combines the payload with a call to schedule the next tick
 	executePayload: -> 
 		@set('id', null) # wipes the id momentarily. Permanently if the ticker stalls.
+		@block() # block any stacked calls until this has completed, e.g. through a nudge
 		@executeWithCompletionCallback(@get('payload'))
 		
 	# Executes any function, passing a callback to cue up the next call
-	executeWithCompletionCallback: (_function) -> _function(=> @tick({silent: true}))
+	executeWithCompletionCallback: (_function) -> 
+		_function => @unblock() and @workOrTick()
+
+	# Work through the next in the queue or schedule a tick
+	workOrTick: -> @workNext() or @tick({silent: true})
+
+	# Work next payload in the queue
+	workNext: -> @work(@nextQueued()) unless not @queued()
+
+	# Work a payload
+	work: (payload) -> @block() and @unqueue(payload) and @executeWithCompletionCallback(payload)
 	
 	defaultPayload: (complete) -> complete()
 		
@@ -61,4 +76,21 @@ class Backbone.Ticker extends Backbone.Model
 	clearOldProcess: -> !clearTimeout(@previous('id')) unless not @previous('id')
 	
 	isRunning: -> !!@get('id')
+	
+	isBlocked: -> @get('blocked')
+	
+	# Block when a process is running
+	block: -> @set("blocked", true)
+	
+	# Unblock when process has completed
+	unblock: -> @set("blocked", false)
+	
+	# Queue payloads while the ticker is blocked
+	enqueue: (payload) -> @set('queue', @get('queue').concat([payload])) 
+	
+	unqueue: (payload) -> @set('queue', _.without(@get('queue'), payload))
+	
+	queued: -> @get('queue').length isnt 0
+	
+	nextQueued: -> _.first(@get('queue'))
 	

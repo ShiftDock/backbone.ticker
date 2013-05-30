@@ -14,8 +14,10 @@
     Ticker.prototype.defaults = function() {
       var _this = this;
       return {
+        blocked: false,
         interval: 1000,
         id: null,
+        queue: [],
         payload: function(complete) {
           return _this.defaultPayload(complete);
         }
@@ -64,7 +66,9 @@
       if (payload == null) {
         payload = this.executePayload;
       }
-      if (this.isRunning()) {
+      if (this.isBlocked()) {
+        return this.enqueue(payload);
+      } else if (this.isRunning()) {
         if (this.pause()) {
           return this.executeWithCompletionCallback(payload);
         }
@@ -89,16 +93,32 @@
 
     Ticker.prototype.executePayload = function() {
       this.set('id', null);
+      this.block();
       return this.executeWithCompletionCallback(this.get('payload'));
     };
 
     Ticker.prototype.executeWithCompletionCallback = function(_function) {
       var _this = this;
       return _function(function() {
-        return _this.tick({
-          silent: true
-        });
+        return _this.unblock() && _this.workOrTick();
       });
+    };
+
+    Ticker.prototype.workOrTick = function() {
+      return this.workNext() || this.tick({
+        silent: true
+      });
+    };
+
+    Ticker.prototype.workNext = function() {
+      console.log("Will work next? " + (this.queued()));
+      if (!!this.queued()) {
+        return this.work(this.nextQueued());
+      }
+    };
+
+    Ticker.prototype.work = function(payload) {
+      return this.block() && this.unqueue(payload) && this.executeWithCompletionCallback(payload);
     };
 
     Ticker.prototype.defaultPayload = function(complete) {
@@ -113,6 +133,34 @@
 
     Ticker.prototype.isRunning = function() {
       return !!this.get('id');
+    };
+
+    Ticker.prototype.isBlocked = function() {
+      return this.get('blocked');
+    };
+
+    Ticker.prototype.block = function() {
+      return this.set("blocked", true);
+    };
+
+    Ticker.prototype.unblock = function() {
+      return this.set("blocked", false);
+    };
+
+    Ticker.prototype.enqueue = function(payload) {
+      return this.set('queue', this.get('queue').concat([payload]));
+    };
+
+    Ticker.prototype.unqueue = function(payload) {
+      return this.set('queue', _.without(this.get('queue'), payload));
+    };
+
+    Ticker.prototype.queued = function() {
+      return this.get('queue').length !== 0;
+    };
+
+    Ticker.prototype.nextQueued = function() {
+      return _.first(this.get('queue'));
     };
 
     return Ticker;
