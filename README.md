@@ -128,7 +128,7 @@ ticker.set('payload', saveIfChanged)
 
 #### Payload Example - CoffeeScript
 
-```js
+```coffee
 
 ticker = new Backbone.Ticker({interval: 4000});
 
