@@ -153,11 +153,11 @@
     };
 
     Ticker.prototype.unqueue = function(payload) {
-      return this.set('queue', _.without(this.get('queue'), payload))({
-        queueEmpty: function() {
-          return this.get('queue').length === 0;
-        }
-      });
+      return this.set('queue', _.without(this.get('queue'), payload));
+    };
+
+    Ticker.prototype.queueEmpty = function() {
+      return this.get('queue').length === 0;
     };
 
     Ticker.prototype.nextQueuedPayload = function() {
