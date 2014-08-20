@@ -133,17 +133,17 @@ ticker.set('payload', saveIfChanged)
 ticker = new Backbone.Ticker({interval: 4000});
 
 saveIfChanged = (complete) ->
-    if appointment.hasChanged()
-        appointment.save
-            success: (complete) ->
-                console.log "Saved successfully!"
-                complete()
-            error: (complete) ->
-                # No complete(); Stops ticking if save fails
-                console.log "Save failed!"
-    else
-        console.log "Nothing to see here!"
+  if appointment.hasChanged()
+    appointment.save
+      success: (complete) ->
+        console.log "Saved successfully!"
         complete()
+      error: (complete) ->
+        # No complete(); Stops ticking if save fails
+        console.log "Save failed!"
+  else
+    console.log "Nothing to see here!"
+    complete()
 
 ticker.set('payload', saveIfChanged)
 
