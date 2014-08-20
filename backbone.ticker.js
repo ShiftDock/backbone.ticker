@@ -111,8 +111,10 @@
     };
 
     Ticker.prototype.workNext = function() {
-      if (!!this.queued()) {
-        return this.work(this.nextQueued());
+      var nextPayload;
+      nextPayload = nextQueuedPayload();
+      if (!this.queueEmpty()) {
+        return this.work(nextPayload);
       }
     };
 
@@ -151,14 +153,14 @@
     };
 
     Ticker.prototype.unqueue = function(payload) {
-      return this.set('queue', _.without(this.get('queue'), payload));
+      return this.set('queue', _.without(this.get('queue'), payload))({
+        queueEmpty: function() {
+          return this.get('queue').length === 0;
+        }
+      });
     };
 
-    Ticker.prototype.queued = function() {
-      return this.get('queue').length !== 0;
-    };
-
-    Ticker.prototype.nextQueued = function() {
+    Ticker.prototype.nextQueuedPayload = function() {
       return _.first(this.get('queue'));
     };
 
