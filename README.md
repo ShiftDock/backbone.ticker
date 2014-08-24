@@ -127,10 +127,10 @@ saveIfChanged = (complete) ->
     console.log "Nothing to see here!"
     complete()
 
-ticker = new Backbone.Ticker({
-  interval: 4000,
+ticker = new Backbone.Ticker
+  interval: 4000
   payload:  saveIfChanged
-});
+
 
 ```
 
